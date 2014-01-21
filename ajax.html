@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>検索</title>
+</head>
+<body>
+<h1>検索</h1>
+<form>
+<input type="text" name="keyword" value="" id="searchtxt">
+</form>
+<p id="display"></p>
+
+<!-- jQueryライブラリの読み込み -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js "></script>
+<script type="text/javascript">
+// キーから指が離れたときにsearch.phpへ向けてPOSTメソッドでキーワードを送信
+$("#searchtxt").keyup(function(event) {
+$.ajax({
+	  type: "POST",
+	  url: "lib/search.php",
+	  data: {ajaxkeyword: $(this).val()},
+	  dataType: "HTML"
+	})
+	.done(function(data) { $("#display").html(data); })
+	.fail(function() { $("#display").html("投稿できませんでした。"); });
+});
+</script>
+</body>
+</html>

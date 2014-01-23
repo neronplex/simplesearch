@@ -6,24 +6,36 @@
 </head>
 <body>
 <h1>検索</h1>
-<form>
 <input type="text" name="keyword" value="" id="searchtxt">
-</form>
 <p id="display"></p>
-
+<p id="result"></p>
 <!-- jQueryライブラリの読み込み -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js "></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript">
 // キーから指が離れたときにsearch.phpへ向けてPOSTメソッドでキーワードを送信
 $("#searchtxt").keyup(function(event) {
-$.ajax({
-	  type: "POST",
-	  url: "lib/search.php",
-	  data: {ajaxkeyword: $(this).val()},
-	  dataType: "HTML"
+	$.ajax({
+		type: "POST",
+		url: "lib/search.php",
+		data: {ajaxkeyword: $(this).val()},
+		dataType: "JSON",
 	})
-	.done(function(data) { $("#display").html(data); })
-	.fail(function() { $("#display").html("投稿できませんでした。"); });
+	.done(function(data) {
+		// ヒット件数の表示
+		$("#display").text('検索結果：'+ data.count +'件');
+		// リストを初期化
+		$("#result > ol").remove();
+		// #resultの後ろにリストを配置
+		$("#result").append("<ol>").append("</ol>");
+		// countの分だけインクリメントして処理
+		for (var i = 0 ; i < data.count ; i++) {
+			// 事前に変数で中身を作成
+			var resultrow = '<li><a href="'+ data[i].URL +'">'+ data[i].title +'</a></li>';
+			// 検索結果の中身を出力・<ol>の後ろに配置
+			$("#result > ol").append(resultrow);
+		}
+	})
+	.fail(function() {$("#display").html("エラーにより検索できませんでした。");});
 });
 </script>
 </body>

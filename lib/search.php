@@ -17,8 +17,8 @@ $dbh = new PDO("mysql:host=localhost; dbname=searchdb", "searchdb", "searchdb");
 if($_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest' && isset($_POST[ajaxkeyword])) {
 
 	try {
-		// SQL文「本文中に指定されたキーワードが入っているレコードを抜き出せ」
-		$sql = "SELECT * FROM search WHERE mainbody LIKE ?";
+		// SQL文「指定されたキーワードが入っているレコードのカラムを抜き出せ」
+		$sql = "SELECT title,URL FROM search WHERE mainbody LIKE ?";
 
 		// クエリの送信準備
 		$stmt = $dbh->prepare($sql);
@@ -29,17 +29,27 @@ if($_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest' && isset($_POST[ajaxke
 		$stmt->execute($params);
 		// レコードの行数を数える
 		$count = $stmt->rowCount();
-
-		echo "{$count}件のデータがあります。<br>";
-		// 検索結果を配列に入れつつ、検索件数分の回数ループ処理
-		while($result = $stmt->fetch(PDO::FETCH_ASSOC)){
-			// ヒアドキュメント
-			echo <<< HERE
-				<a href="$result[URL]">$result[title]</a><br />
-HERE;
+		
+		// 検索結果が0件の場合
+		if($count == "0") {
+			# 結果に検索0件とだけ入れて返す
+			$result[count] = $count;
+		// レコードがあった場合
+		}else {
+			# 件数分だけループ処理
+			while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+				# 件数とレコードを連想配列に入れて返す
+				$result[count] = $count;
+				$result[] = $row;
+			}
 		}
+			
+		// JSON出力
+		$options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_PRETTY_PRINT;
+		header('Content-type: application/json');
+		echo json_encode($result, $options);
 
-		// 接続失敗時のエラー表示
+	// 接続失敗時のエラー処理
 	} catch (PDOException $e) {
 		var_dump($e->getMessage());
 	}
